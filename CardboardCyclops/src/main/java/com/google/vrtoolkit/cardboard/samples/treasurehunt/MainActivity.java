@@ -74,6 +74,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private int mIsFloorParam;
 
     private float[] mModelCube;
+
     private float[] mCamera;
     private float[] mView;
     private float[] mHeadView;
@@ -158,6 +159,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
         mOverlayView.show3DToast("Pull the magnet when you find an object.");
+        
+        
     }
 
     @Override
@@ -281,7 +284,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         // Build the Model part of the ModelView matrix.
         Matrix.rotateM(mModelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
-
+        
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(mCamera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -320,8 +323,16 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // for calculating cube position and light.
         Matrix.multiplyMM(mModelView, 0, mView, 0, mModelCube, 0);
         Matrix.multiplyMM(mModelViewProjection, 0, transform.getPerspective(), 0, mModelView, 0);
+       
         drawCube();
-
+        
+        if (isLookingAtObject())
+        {
+            mVibrator.vibrate(500);
+            mScore++;
+            hideObject();
+        }
+        
         // Set mModelView for the floor, so we draw floor in the correct location
         Matrix.multiplyMM(mModelView, 0, mView, 0, mModelFloor, 0);
         Matrix.multiplyMM(mModelViewProjection, 0, transform.getPerspective(), 0,
@@ -343,7 +354,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         // Set the Model in the shader, used to calculate lighting
         GLES20.glUniformMatrix4fv(mModelParam, 1, false, mModelCube, 0);
-
+        
         // Set the ModelView in the shader, used to calculate lighting
         GLES20.glUniformMatrix4fv(mModelViewParam, 1, false, mModelView, 0);
 
@@ -358,11 +369,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         GLES20.glVertexAttribPointer(mNormalParam, 3, GLES20.GL_FLOAT,
                 false, 0, mCubeNormals);
 
-
+        
 
         if (isLookingAtObject()) {
             GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false,
                     0, mCubeFoundColors);
+
         } else {
             GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false,
                     0, mCubeColors);
@@ -398,7 +410,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
      * looking at the object. Otherwise, remind the user what to do.
      */
     @Override
-    public void onCardboardTrigger() {
+    public void onCardboardTrigger() 
+    {
         Log.i(TAG, "onCardboardTrigger");
 
         if (isLookingAtObject()) {
@@ -409,7 +422,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             mOverlayView.show3DToast("Look around to find the object!");
         }
         // Always give user feedback
-        mVibrator.vibrate(50);
+        mVibrator.vibrate(50); 
     }
 
     /**
