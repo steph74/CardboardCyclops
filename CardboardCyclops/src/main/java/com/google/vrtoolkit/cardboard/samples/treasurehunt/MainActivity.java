@@ -22,6 +22,7 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import com.google.vrtoolkit.cardboard.*;
@@ -34,6 +35,8 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A Cardboard sample application.
@@ -93,9 +96,45 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private float mFloorDepth = 20f;
 
     private Vibrator mVibrator;
+    
+    private Timer timer;
+    private TimerTask timerTask;
+
+    final Handler handler = new Handler();
 
     private CardboardOverlayView mOverlayView;
 
+    @Override
+    protected void onResume() {
+    	super.onResume();
+    	startTimer();
+    }
+    
+    public void startTimer() {
+    	timer = new Timer();
+    	initializeTimerTask();
+    	timer.schedule(timerTask, 5000, 10);
+    }
+    
+    public void stoptimertask(CardboardOverlayView v) {
+    	if (timer != null) {
+    		timer.cancel();
+    		timer = null;
+    	}
+    }
+    
+    public void initializeTimerTask() {
+    	timerTask = new TimerTask() {
+    		public void run() {
+    			handler.post(new Runnable() {
+    				public void run() {
+    					 mOverlayView.show3DToast("Score: " + mScore);
+    				}
+    			});
+    		}
+    	};
+    }
+    
     /**
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader
      * @param type The type of shader we will be creating.
@@ -163,9 +202,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull the magnet when you find an object.");
-        
-        
+        mOverlayView.show3DToast("Pull the magnet when you find an object.");  
     }
 
     @Override
@@ -478,7 +515,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
     }
-    
+
     public class BackgroundSound extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -492,6 +529,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
     }
-    
+
 }
 

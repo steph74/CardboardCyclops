@@ -160,7 +160,7 @@ public class CardboardOverlayView extends LinearLayout {
             final float verticalImageOffset = -0.07f;
 
             // Vertical position of the text, specified in fractions of this ViewGroup's height.
-            final float verticalTextPos = 0.52f;
+            final float verticalTextPos = 0.1f;
 
             // Layout ImageView
             float imageMargin = (1.0f - imageSize) / 2.0f;
