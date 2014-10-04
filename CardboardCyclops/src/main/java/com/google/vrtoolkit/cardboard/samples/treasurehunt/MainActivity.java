@@ -17,8 +17,10 @@
 package com.google.vrtoolkit.cardboard.samples.treasurehunt;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
@@ -37,7 +39,10 @@ import java.nio.FloatBuffer;
  * A Cardboard sample application.
  */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
-
+	
+	BackgroundSound mBackgroundSound = new BackgroundSound();
+	
+	
     private static final String TAG = "MainActivity";
 
     private static final float CAMERA_Z = 0.01f;
@@ -473,4 +478,20 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
     }
+    
+    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.sound); 
+            player.setLooping(true); // Set looping 
+            player.setVolume(100,100); 
+            player.start(); 
+
+            return null;
+        }
+
+    }
+    
 }
+
