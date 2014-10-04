@@ -43,8 +43,8 @@ import java.util.TimerTask;
  */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
 	
-	BackgroundSound mBackgroundSound = new BackgroundSound();
-	
+	//BackgroundSound mBackgroundSound = new BackgroundSound();
+//	LaserSound mLaserSound = new LaserSound();
 	
     private static final String TAG = "MainActivity";
 
@@ -102,12 +102,21 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     final Handler handler = new Handler();
 
+    public MediaPlayer backgroundPlayer;
+    public MediaPlayer laserPlayer;
     private CardboardOverlayView mOverlayView;
 
     @Override
     protected void onResume() {
     	super.onResume();
     	startTimer();
+    	//mBackgroundSound.execute();
+        backgroundPlayer = MediaPlayer.create(MainActivity.this, R.raw.sound); 
+        laserPlayer = MediaPlayer.create(MainActivity.this, R.raw.laser);
+        laserPlayer.setVolume(100, 100);
+        backgroundPlayer.setLooping(true); // Set looping 
+        backgroundPlayer.setVolume(100,100); 
+        backgroundPlayer.start(); 
     }
     
     public void startTimer() {
@@ -373,6 +382,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             mVibrator.vibrate(500);
             mScore++;
             hideObject();
+            laserPlayer.start();
         }
         
         // Set mModelView for the floor, so we draw floor in the correct location
@@ -386,6 +396,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onFinishFrame(Viewport viewport) {
     }
 
+    @Override
+     protected void onPause()
+    {
+    	backgroundPlayer.stop();
+    	super.onPause();
+    };
+    
     /**
      * Draw the cube. We've set all of our transformation matrices. Now we simply pass them into
      * the shader.
@@ -516,19 +533,32 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
     }
 
-    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.sound); 
-            player.setLooping(true); // Set looping 
-            player.setVolume(100,100); 
-            player.start(); 
-
-            return null;
-        }
-
-    }
+//    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.sound); 
+//            player.setLooping(true); // Set looping 
+//            player.setVolume(100,100); 
+//            player.start(); 
+//
+//            return null;
+//        }
+//        
+//    }
+//    public class LaserSound extends AsyncTask<Void, Void, Void> {
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.laser); 
+//            player.setLooping(true); // Set looping 
+//            player.setVolume(100,100); 
+//            player.start(); 
+//
+//            return null;
+//        }
+//        
+//    }
 
 }
 
