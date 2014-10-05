@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.text.DecimalFormat;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -105,6 +106,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public MediaPlayer backgroundPlayer;
     public MediaPlayer laserPlayer;
     private CardboardOverlayView mOverlayView;
+    public int powerBar = 0;
+    public double remainTime = 45.0;
+    public static DecimalFormat numberFormat = new DecimalFormat("#.0");
+    public boolean endGame = false;
+    public MediaPlayer hsPlayer;
 
     @Override
     protected void onResume() {
@@ -114,6 +120,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         backgroundPlayer = MediaPlayer.create(MainActivity.this, R.raw.sound); 
         laserPlayer = MediaPlayer.create(MainActivity.this, R.raw.laser);
         laserPlayer.setVolume(100, 100);
+        hsPlayer = MediaPlayer.create(MainActivity.this, R.raw.hs);
+        hsPlayer.setVolume(100, 100);
         backgroundPlayer.setLooping(true); // Set looping 
         backgroundPlayer.setVolume(100,100); 
         backgroundPlayer.start(); 
@@ -122,7 +130,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void startTimer() {
     	timer = new Timer();
     	initializeTimerTask();
-    	timer.schedule(timerTask, 5000, 10);
+    	timer.schedule(timerTask, 5000, 100);
     }
     
     public void stoptimertask(CardboardOverlayView v) {
@@ -137,7 +145,52 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     		public void run() {
     			handler.post(new Runnable() {
     				public void run() {
-    					 mOverlayView.show3DToast("Score: " + mScore);
+    					
+    					remainTime = remainTime - 0.1;
+
+    					if (remainTime < 0)
+    					{
+    						endGame = true;
+    					}
+    					//calculate powerbar string
+    					String powerBarString = "";
+    					for (int i = 0; i < powerBar%5; i++)
+    					{
+    						powerBarString = powerBarString + "==";
+    					}
+    					for (int i = 1; i < 6-(powerBar%5); i++)
+    					{
+    						powerBarString = powerBarString + "--";
+    					}
+    					if (powerBar%5 == 0)
+    					{
+    						powerBarString = "----------";
+    					}
+
+    					//GUI Display
+    					if (!endGame)
+    					{
+    						mOverlayView.show3DToast(
+    							"\n\n"
+    							+"Score: " + mScore + "      Time: " 
+    									+ numberFormat.format(remainTime)
+    							+"\n\n\n\n\n\n\n"
+    							+"+"
+    							+"\n\n\n\n\n\n\n"
+    							+"["
+    							+powerBarString
+    							+"]");
+    					}
+    					else if (endGame)
+    					{
+    						remainTime = 0;
+    						mOverlayView.show3DToast(
+        							"\n\n"
+        							+"Time: " 
+        									+ numberFormat.format(remainTime)
+        							+"\n\n\n\n\n\n\n"
+        							+"YOUR SCORE IS: Score: " + mScore);
+    					}
     				}
     			});
     		}
@@ -211,7 +264,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull the magnet when you find an object.");  
+        mOverlayView.show3DToast("Center the cube to fire the laser!\n" +
+        		"Fill up the power bar for bonus points!");  
     }
 
     @Override
@@ -377,12 +431,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
        
         drawCube();
         
-        if (isLookingAtObject())
+        if (isLookingAtObject() && !endGame)
         {
             mVibrator.vibrate(500);
             mScore++;
             hideObject();
             laserPlayer.start();
+            powerBar++;
+            if (mScore > 0 && powerBar%5==0)
+            {
+            	mScore+=2;
+            	hsPlayer.start();
+            }
         }
         
         // Set mModelView for the floor, so we draw floor in the correct location
@@ -532,33 +592,5 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
     }
-
-//    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
-//
-//        @Override
-//        protected Void doInBackground(Void... params) {
-//            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.sound); 
-//            player.setLooping(true); // Set looping 
-//            player.setVolume(100,100); 
-//            player.start(); 
-//
-//            return null;
-//        }
-//        
-//    }
-//    public class LaserSound extends AsyncTask<Void, Void, Void> {
-//
-//        @Override
-//        protected Void doInBackground(Void... params) {
-//            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.laser); 
-//            player.setLooping(true); // Set looping 
-//            player.setVolume(100,100); 
-//            player.start(); 
-//
-//            return null;
-//        }
-//        
-//    }
-
 }
 
